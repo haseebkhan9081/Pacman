@@ -28,6 +28,7 @@
             if(map[i][j]==0 && this.getMapy()==i && this.getMapX()==j){
                 map[i][j]=2;
                 score++;
+                eatSound.play();
             }
 
             
@@ -74,9 +75,24 @@ if(map[this.getMapy()][this.getMapX()]==1
 || map[this.getMapYRightSide()][this.getMapX()]==1 
 || map[this.getMapy()][this.getMapXRightSide()]==1||
    map[this.getMapYRightSide()][this.getMapXRightSide()]==1 ){return true} return false;  }
-    checkGhostCollision(){
-
+   
+   
+   
+   
+   //the GHost collison
+   checkGhostCollision(){
+    for(let i=0;i<ghosts.length;i++){
+        if(ghosts[i].getMapy()==this.getMapy() && ghosts[i].getMapX()==this.getMapX()){
+            return true;
+        }
     }
+    return false;
+   }
+    
+   
+   
+   
+   
     changeDirectionIfPossible(){
      if(this.direction==this.nextDirection){return}
      let tempDirection=this.direction;
@@ -127,6 +143,8 @@ if(map[this.getMapy()][this.getMapX()]==1
         context.restore();
 
 }
+
+ 
 
 getMapX(){
 return parseInt(this.x/oneBlocksize);

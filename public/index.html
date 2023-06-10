@@ -5,17 +5,24 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pacman</title>
+    
 </head>
 <body style="margin: 0; background-color: black; overflow-x: hidden; overflow-y: hidden;">
-    
-    <canvas id="canvas" width="500" height="500"></canvas>
+      
+    <canvas id="canvas" width="500" height="500">  </canvas>
     <div style="display: none;">
     <img  id="animations" src="animations.gif" alt="">
     <img id="ghosts" src="ghost.png" alt="">
     </div>
+  <audio id="eatSound" src="eating.mp3"></audio> 
+  <audio id="hitSound" src="hit.mp3"></audio> 
+  <audio id="gameOverSound" src="gameover.mp3"></audio>
+  <audio id="gameOpening" src="opening.mp3"></audio>
+  <audio id="gameWinSound" src="win.mp3"></audio>
 <script src="ghost.js"  ></script>
 <script src="pacman.js"  ></script>
 <script src="game.js"    ></script>
+<p style="color: wheat;">Made with <img width="18px" height="18px" src="heart.png" alt=""> by Haseeb Khan</p>
 
 
     

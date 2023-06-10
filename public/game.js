@@ -3,14 +3,17 @@ const context=canvas.getContext('2d');
 
 const pacmanFrames=document.getElementById('animations');
 const ghostFrames=document.getElementById('ghosts');
-// import {Ghost} from './ghost.js';
-// import {Pacman} from './pacman.js';
+const eatSound=document.getElementById('eatSound');
+const hitSound=document.getElementById('hitSound');
+const gameOpening=document.getElementById('gameOpening');
+const gameOverSound=document.getElementById('gameOverSound');
+const gameWinSound=document.getElementById('gameWinSound');
  let creatRect=(x,y,width,height,color)=> {
 
     context.fillStyle=color;
     context.fillRect(x,y,width,height);
 }
-//export every varaiable
+
 let pacman;
 let oneBlocksize=20;
 let wallColor="#342DCA"; // color
@@ -25,7 +28,8 @@ const DIRECTION_BOTTOM=1;
 let score=0;
 let ghostCount=4;
 let ghosts=[];
-
+let lives=3;
+let foodCount=220;
 let ghostImageLocations=[
     { x: 0, y: 0 },
     { x: 176, y: 0 },
@@ -41,12 +45,12 @@ let map=[
     [1,0,1,1,1, 0,1,0,1,1, 1,1,1,0,1, 0,1,1,1,0, 1],
     [1,0,0,0,0, 0,1,0,0,0, 1,0,0,0,1, 0,0,0,0,0, 1],
     [1,1,1,1,1, 0,1,1,1,0, 1,0,1,1,1, 0,1,1,1,1, 1],
-    [0,0,0,0,1, 0,1,0,0,0, 0,0,0,0,1, 0,1,0,0,0, 0],
+    [2,2,2,2,1, 0,1,0,0,0, 0,0,0,0,1, 0,1,2,2,2, 2],
     [1,1,1,1,1, 0,1,0,1,1, 0,1,1,0,1, 0,1,1,1,1, 1],
     [1,0,0,0,0, 0,0,0,1,0, 0,0,1,0,0, 0,0,0,0,0, 1],
     [1,1,1,1,1, 0,1,0,1,0, 0,0,1,0,1, 0,1,1,1,1, 1],
-    [0,0,0,0,1, 0,1,0,1,1, 1,1,1,0,1, 0,1,0,0,0, 0],
-    [0,0,0,0,1, 0,1,0,0,0, 0,0,0,0,1, 0,1,0,0,0, 0],
+    [2,2,2,2,1, 0,1,0,1,1, 1,1,1,0,1, 0,1,2,2,2, 2],
+    [2,2,2,2,1, 0,1,0,0,0, 0,0,0,0,1, 0,1,2,2,2, 2],
     [1,1,1,1,1, 0,0,0,1,1, 1,1,1,0,0, 0,1,1,1,1, 1],
     [1,0,0,0,0, 0,0,0,0,0, 1,0,0,0,0, 0,0,0,0,0, 1],
     [1,0,1,1,1, 0,1,1,1,0, 1,0,1,1,1, 0,1,1,1,0, 1],
@@ -58,22 +62,84 @@ let map=[
     [1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1],
      
 ]
+//
+let randomTargetsForGhosts = [
+    { x: 1 * oneBlocksize, y: 1 * oneBlocksize },
+    { x: 1 * oneBlocksize, y: (map.length - 2) * oneBlocksize },
+    { x: (map[0].length - 2) * oneBlocksize, y: oneBlocksize },
+    {
+        x: (map[0].length - 2) * oneBlocksize,
+        y: (map.length - 2) * oneBlocksize,
+    },
+];
 
-let randomTargetsForGhosts=[
-    {x:1*oneBlocksize ,y:1*oneBlocksize },
-    {x:1*oneBlocksize ,y:2*oneBlocksize },
-    {x: 1*oneBlocksize ,y:3*oneBlocksize },
-    {x: 1*oneBlocksize ,y:4*oneBlocksize },
-]
 function update(){
     pacman.moveProcess();
     pacman.eat();
+    for(let i=0;i<ghosts.length;i++){
+        ghosts[i].moveProcess();
+    }
+    if(pacman.checkGhostCollision()){
+       console.log("hit");
+       
+       hitSound.play();
+       
+       restartGame();
+
+    }
+    if(score>=foodCount){
+        gameWinSound.play();
+        drawWin();
+    }
 }
+function drawWin(){
+    context.font="30px emulogic";
+    context.fillStyle="white";
+    context.fillText("You Win! ",150,220);
+}
+function restartGame(){
+    createNewPacman();
+    createGhosts();
+    
+    lives--;
+    if(lives==0){
+        gameOverSound.play();
+        clearInterval(gameInterval);
+        drawGameOver();
+    }}
 
 
+    function drawGameOver(){
+        context.font="30px emulogic";
+        context.fillStyle="white";
+        context.fillText("Game Over! ",150,220);
+    }
 function gameloop() {
-    update();
+     
+
     draw();
+    update();
+    
+}
+gameInterval=setInterval(gameloop,1000/60);
+function drawLives(){
+    context.font="30px emulogic";
+    context.fillStyle="white";
+    context.fillText("Lives: ",220,oneBlocksize*(map.length+1)+20);
+    for(let i=0;i<lives;i++){
+    context.drawImage(
+        pacmanFrames,
+        2*oneBlocksize,
+        0,
+        oneBlocksize,
+        oneBlocksize,
+        350+i*oneBlocksize,
+        oneBlocksize*map.length+20,
+        oneBlocksize,
+        oneBlocksize
+
+        )
+    }
 }
 
 function drawFoods(){
@@ -102,11 +168,13 @@ function draw(){
     drawWalls();
     drawFoods();
     drawScore();
+    drawLives();
     pacman.draw();
     drawGhost();
 }
 
-let gameInterval=setInterval(gameloop,1000/60);
+ 
+
 function drawWalls(){
     for(let i=0;i<map.length;i++){
      for(let j=0;j<map[i].length;j++){
@@ -157,10 +225,11 @@ function drawWalls(){
 }
 }
 function createNewPacman(){
-    pacman= new Pacman(oneBlocksize,oneBlocksize,oneBlocksize,oneBlocksize,oneBlocksize/5);
+    pacman= new Pacman(oneBlocksize,oneBlocksize,oneBlocksize,oneBlocksize,oneBlocksize/8);
 }
 
 function createGhosts(){
+    ghosts=[];
 for(let i=0;i<ghostCount;i++){
     console.log("this is he loop");
     let newGhost = new Ghost( 
@@ -177,9 +246,10 @@ for(let i=0;i<ghostCount;i++){
 console.log(ghosts);
 }
 }
+gameOpening.play();
 createNewPacman();
 createGhosts();
-gameloop();
+ gameloop();
 window.addEventListener('keydown',function(event){
 let k=event.keyCode;
 this.setTimeout(function(){
